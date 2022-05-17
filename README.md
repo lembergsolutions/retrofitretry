@@ -15,10 +15,7 @@ Edit `build.gradle` in project root and add additional repository:
 allprojects {
     repositories {
         // google(), jcenter()...
-        maven {
-            name = "RetrofitRetry"
-            url = uri("https://maven.pkg.github.com/ruslan-yanchyshyn-lemberg/retrofitretry")
-        }
+        maven { url 'https://jitpack.io' }
     }
 }
 ```
@@ -27,12 +24,12 @@ Add library dependency in your module `build.gradle`:
 
 ```groovy
 dependencies {
-    implementation "com.lembergsolutions.library:retrofitretry:1.0.0"
+    implementation "com.github.ruslan-yanchyshyn-lemberg:retrofitretry:1.0.0"
     // ...
 }
 ```
 
-### Gain HTTP 429 automatic retry
+### Get transparent "Rate-limits" support by handling HTTP 429 status in the library
 
 Add `RetrofitRetryCallAdapterFactory` adapter factory into Retrofit API builder:
 
@@ -54,17 +51,17 @@ interface ApiInterface {
 }
 ```
 
-Now when you call `fetchNews()` method and the server return HTTP status 429, retry handler will automatically schedule request retry after specified in the response delay.
+Now when you call `fetchNews()` method and the server return HTTP status 429, retry handler will automatically schedule request retry after delay specified in the response.
 
-The delay can be specified in HTTP response header in format of seconds:
+The delay can be specified in format of seconds:
 
 > Retry-After: 5
 
-or it can be specified by date:
+or by date:
 
 > Retry-After: Thu, 24 Feb 2022 04:30:00 EET
 
-When subsequent request is completed, its result will be delivered to your code, so from the client code side the request will look like running some time.
+When subsequent request is completed, its result will be delivered to your code, so from the code side the request will look like running some time.
 
 The library is using Kotlin coroutines for retries scheduling and does not use blocking wait thus it does not stuck IO threads.
 
@@ -80,7 +77,7 @@ interface ApiInterface {
 }
 ```
 
-`MyCustomRetryHandler` should implement `RetryHandler` interface with a single method:
+`MyCustomRetryHandler` should implement `RetryHandler` interface with one single method:
 
 ```kotlin
 /**

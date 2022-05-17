@@ -1,50 +1,15 @@
 apply plugin: 'maven-publish'
 
-task sourceJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier "sources"
-}
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
 
-def githubProps = new Properties()
-if (file("github.properties").exists()) {
-    file("github.properties").withInputStream { githubProps.load(it) }
-}
-
-publishing {
-    publications {
-        release(MavenPublication) {
-            groupId LIB_ARTIFACT_GROUP_ID
-            artifactId LIB_ARTIFACT_ID
-            version "${project.LIB_VERSION_MAJOR}.${project.LIB_VERSION_MINOR}.${project.LIB_VERSION_PATCH}"
-            artifact("$buildDir/outputs/aar/RetrofitRetryLib-release.aar")
-            artifact(sourceJar)
-
-            pom.withXml {
-                def dependenciesNode = asNode().appendNode('dependencies')
-
-                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
-                configurations.api.allDependencies.each {
-                    def dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', it.group)
-                    dependencyNode.appendNode('artifactId', it.name)
-                    dependencyNode.appendNode('version', it.version)
-                }
+                groupId LIB_ARTIFACT_GROUP_ID
+                artifactId LIB_ARTIFACT_ID
+                version "${project.LIB_VERSION_MAJOR}.${project.LIB_VERSION_MINOR}.${project.LIB_VERSION_PATCH}"
             }
-        }
-    }
-
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/${githubProps['GITHUB_USER_ID']}/${githubProps['GITHUB_REPOSITRY']}")
-            credentials {
-                username = githubProps['GITHUB_USER_ID']
-                password = githubProps['GITHUB_PASSWORD']
-            }
-        }
-        maven {
-            name = 'CustomMavenRepo'
-            url = "file://${buildDir}/repo"
         }
     }
 }
